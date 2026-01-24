@@ -1,48 +1,17 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import assets from '../assets/assets';
-import { AuthContext } from '../../context/AuthContext';
-import { readFileAsDataURL } from '../lib/utilis';
-import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
-    const { authUser, updateProfile } = useContext(AuthContext);
     const [selectedImg, setSelectedImg] = useState(null)
-    const [previewImg, setPreviewImg] = useState(null);
     const navigate = useNavigate();
-    const [name, setName] = useState("")
-    const [bio, setBio] = useState("")
-
-    useEffect(() => {
-        if (authUser) {
-            setName(authUser.fullName || "");
-            setBio(authUser.bio || "");
-            setPreviewImg(authUser.profilePic || null);
-        }
-    }, [authUser]);
-
-    const handleImageSelect = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        try {
-            const base64 = await readFileAsDataURL(file);
-            setSelectedImg(base64);
-            setPreviewImg(base64);
-        } catch (error) {
-            toast.error("Failed to process image");
-        }
-    };
+    const [name, setName] = useState("Martin Johnson")
+    const [bio, setBio] = useState("Hi Everyone, I am Using QuickChat")
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        try {
-            await updateProfile({ fullName: name, bio, profilePic: selectedImg });
-            // navigate('/') // Optional: stay on profile page or go home
-        } catch (error) {
-            console.log(error);
-        }
+        navigate('/')
     }
-
     return (
         <div className='min-h-screen bg-cover bg-no-repeat flex items-center 
         justify-center'>
@@ -53,16 +22,16 @@ const ProfilePage = () => {
                     <h3 className="text-lg">Profile details</h3>
                     <label htmlFor="avatar" className='flex items-center gap-3 cursor-pointer'>
                         <input
-                            onChange={handleImageSelect}
+                            onChange={(e) => setSelectedImg(e.target.files[0])}
                             type="file"
                             id='avatar'
                             accept='.png, .jpg, .jpeg'
                             hidden
                         />
                         <img
-                            src={previewImg || assets.avatar_icon}
+                            src={selectedImg ? URL.createObjectURL(selectedImg) : assets.avatar_icon}
                             alt=""
-                            className={`w-12 h-12 object-cover ${previewImg && 'rounded-full'}`}
+                            className={`w-12 h-12 ${selectedImg && 'rounded-full'}`}
                         />
                         upload profile image
                     </label>
@@ -73,23 +42,23 @@ const ProfilePage = () => {
                         type="text"
                         required
                         placeholder='Your name'
-                        className='p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 bg-transparent'
+                        className='p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500'
                     />
                     <textarea
                         onChange={(e) => setBio(e.target.value)}
                         value={bio}
                         placeholder="Write profile bio"
                         required
-                        className="p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 bg-transparent"
+                        className="p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
                         rows={4}
                     ></textarea>
 
-                    <button type="submit" className="bg-linear-to-r from-purple-400 to-violet-600 text-white p-2 rounded-full text-lg cursor-pointer hover:opacity-90">
+                    <button type="submit" className="bg-linear-to-r from-purple-400 to-violet-600 text-white p-2 rounded-full text-lg cursor-pointer">
                         Save
                     </button>
                 </form>
                 <img
-                    className='max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10 object-cover'
+                    className='max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10'
                     src={assets.logo_icon}
                     alt=""
                 />

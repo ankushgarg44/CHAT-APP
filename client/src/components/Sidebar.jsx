@@ -1,32 +1,8 @@
-import React, { useEffect, useState, useContext } from "react";
-import assets from "../assets/assets";
+import React from "react";
+import assets, { userDummyData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
-import toast from "react-hot-toast";
-
-const Sidebar = ({ selectedUser, setSelectedUser }) => {
+const Sidebar = ({ selectedUser, setselectedUser }) => {
   const navigate = useNavigate();
-  const { logout, onlineUsers, axios } = useContext(AuthContext);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const getUsers = async () => {
-      setLoading(true);
-      try {
-        const { data } = await axios.get("/api/messages/users");
-        if (data.success) {
-          setUsers(data.users);
-        }
-      } catch (error) {
-        toast.error(error.response?.data?.message || error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    getUsers();
-  }, [axios]);
-
   return (
     <div className={`bg-[#8185B2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white
     ${selectedUser ? "max-md:hidden" : ''}`}>
@@ -40,7 +16,7 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
             border border-gray-600 text-gray-100 hidden group-hover:block'>
               <p onClick={() => navigate('/profile')} className="cursor-pointer text-sm">Edit Profile</p>
               <hr className="my-2 border-t border-gray-500" />
-              <p onClick={logout} className="cursor-pointer text-sm">Logout</p>
+              <p className="cursor-pointer text-sm">Logout</p>
             </div>
           </div>
         </div>
@@ -54,21 +30,22 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
       </div>
 
       <div className='flex flex-col'>
-        {loading ? <div className="text-center text-gray-400">Loading users...</div> : users.map((user, index) => (
-          <div onClick={() => { setSelectedUser(user) }}
-            key={user._id} className={`relative flex items-center gap-2 p-2 pl-4 
+        {userDummyData.map((user, index) => (
+          <div onClick={() => { setselectedUser(user) }}
+            key={index} className={`relative flex items-center gap-2 p-2 pl-4 
   rounded cursor-pointer max-sm:text-sm ${selectedUser?._id === user._id && 'bg-[#282142]/50'} `}>
             <img src={user?.profilePic || assets.default_profile} alt=""
-              className="w-[35px] aspect-square rounded-full object-cover" />
+              className="w-[35px] aspect-square rounded-full" />
             <div className="flex flex-col leading-S">
               <p>{user.fullName}</p>
               {
-                onlineUsers.includes(user._id)
+                index < 3
                   ? <span className="text-green-400 text-xs">Online</span> :
                   <span className="text-neutral-400 text-xs">Offline</span>
               }
             </div>
-            {/* Unread count logic could go here if we had it in the user object or separate state */}
+            {index > 2 && <p className="absolute top-4 right-4 text-xs h-5 w-5 
+    flex justify-center items-center rounded-full bg-violet-500/50">{index}</p>}
           </div>
         ))}
       </div>

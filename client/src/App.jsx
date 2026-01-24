@@ -10,13 +10,13 @@ import assets from './assets/assets'
 const App = () => {
   const { authUser } = useContext(AuthContext);
   return (
-    
+
     <div style={{ backgroundImage: `url(${assets.bgImage})` }} className="bg-contain">
-      <Toaster/>
+      <Toaster />
       <Routes>
-        <Route path='/' element={<HomePage/>}/>
-        <Route path='/login' element={<LoginPage/>}/>
-        <Route path='/profile' element={<ProfilePage/>}/>
+        <Route path='/' element={<HomePage />} />
+        <Route path='/login' element={<LoginPage />} />
+        <Route path='/profile' element={<ProfilePage />} />
       </Routes>
     </div>
   )
