@@ -65,7 +65,7 @@ const startServer = async () => {
   try {
     await connectDB(); // This will throw if connection fails
     server.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
+      console.log(`MONGODB connected and Server running on port ${PORT}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error.message);
