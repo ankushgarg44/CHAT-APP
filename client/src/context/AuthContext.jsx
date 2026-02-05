@@ -8,6 +8,7 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL = backendUrl;
 
 // Create AuthContext
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
 // Provider component

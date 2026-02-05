@@ -1,7 +1,11 @@
 import React from "react";
 import assets from "../assets/assets";
 import { useNavigate } from "react-router-dom";
-const Sidebar = ({ selectedUser, setselectedUser }) => {
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+const Sidebar = ({ selectedUser }) => {
+  const { logout } = useContext(AuthContext)
+
   const navigate = useNavigate();
   return (
     <div className={`bg-[#8185B2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white
@@ -16,7 +20,7 @@ const Sidebar = ({ selectedUser, setselectedUser }) => {
             border border-gray-600 text-gray-100 hidden group-hover:block'>
               <p onClick={() => navigate('/profile')} className="cursor-pointer text-sm">Edit Profile</p>
               <hr className="my-2 border-t border-gray-500" />
-              <p className="cursor-pointer text-sm">Logout</p>
+              <p onClick={() => logout()} className="cursor-pointer text-sm">Logout</p>
             </div>
           </div>
         </div>

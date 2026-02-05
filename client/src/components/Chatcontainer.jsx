@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import assets from '../assets/assets';
-import { formatMessageTime } from '../lib/utils';
 
 const ChatContainer = ({ selectedUser, setSelectedUser }) => {
 
