@@ -4,17 +4,28 @@ import io from "socket.io-client";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+// Set axios defaults
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+axios.defaults.baseURL = backendUrl;
+// Set token from localStorage if available
+const storedToken = localStorage.getItem("token");
+if (storedToken) {
+  axios.defaults.headers.common["token"] = storedToken;
+}
+
 export const ChatContext = createContext();
 
 export const useChat = () => useContext(ChatContext);
 
-const ChatProvider = ({ children }) => {
+export const ChatProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || ""); // auth token
   const [authUser, setAuthUser] = useState(null);                          // logged-in user
   const [onlineUsers, setOnlineUsers] = useState([]);                      // ids of online users
   const [socket, setSocket] = useState(null);                              // socket.io instance
   const [messages, setMessages] = useState([]);                            // current chat messages
   const [unseenMessages, setUnseenMessages] = useState({});                // { userId: count }
+  const [users, setUsers] = useState([]);                                  // all users list
+  const [selectedUser, setSelectedUser] = useState(null);                  // currently selected user for chat
 
   // check auth and fetch user when app loads
   const checkAuth = async () => {
@@ -24,10 +35,22 @@ const ChatProvider = ({ children }) => {
         setAuthUser(data.user);
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Authentication failed");[page:1]
+      toast.error(err?.response?.data?.message || "Authentication failed");
       setAuthUser(null);
       setToken("");
       localStorage.removeItem("token");
+    }
+  };
+
+  // fetch all users
+  const getUsers = async () => {
+    try {
+      const { data } = await axios.get("/api/users");
+      if (data?.success) {
+        setUsers(data.users);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to fetch users");
     }
   };
 
@@ -100,7 +123,7 @@ const ChatProvider = ({ children }) => {
         });
       }
     } catch (err) {
-      toast.error("Failed to load messages");[page:1]
+      toast.error("Failed to load messages");
     }
   };
 
@@ -108,20 +131,19 @@ const ChatProvider = ({ children }) => {
   const sendMessage = async ({ receiverId, text, image }) => {
     if (!receiverId || (!text && !image)) return;
     try {
-      const { data } = await axios.post("/api/messages", {
-        receiverId,
+      const { data } = await axios.post(`/api/messages/send/${receiverId}`, {
         text,
         image,
       });
 
       if (data?.success) {
-        setMessages(prev => [...prev, data.message]);
+        setMessages(prev => [...prev, data.newMessage]);
         if (socket) {
-          socket.emit("sendMessage", data.message);
+          socket.emit("sendMessage", data.newMessage);
         }
       }
     } catch (err) {
-      toast.error("Failed to send message");[page:1]
+      toast.error("Failed to send message");
     }
   };
 
@@ -136,7 +158,12 @@ const ChatProvider = ({ children }) => {
     setMessages,
     unseenMessages,
     setUnseenMessages,
+    users,
+    setUsers,
+    selectedUser,
+    setSelectedUser,
     checkAuth,
+    getUsers,
     getMessages,
     sendMessage,
   };

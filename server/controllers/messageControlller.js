@@ -79,7 +79,7 @@ export const markMessageAsSeen = async (req, res) => {
 export const sendMessage = async (req, res) => {
     try {
         const { text, image } = req.body;
-        const { receiverId } = req.params;
+        const { id: receiverId } = req.params;
         const senderId = req.user.id;
 
         let imageUrl;
@@ -94,7 +94,7 @@ export const sendMessage = async (req, res) => {
             text,
             image: imageUrl,
         });
-        
+
         res.json({ success: true, newMessage });
 
         const receiverSocketId = userSocketMap[receiverId];

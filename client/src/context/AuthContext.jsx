@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
   const connectSocket = (userData) => {
     if (!userData || socket?.connected) return;
     const newSocket = io(backendUrl, {
-      query: { userId: userData.id }
+      query: { userId: userData._id }
     });
     newSocket.connect();
     setSocket(newSocket);
@@ -80,10 +80,12 @@ export const AuthProvider = ({ children }) => {
   // Handle profile update
   const updateProfile = async (body) => {
     try {
-      const { data } = await axios.put("/api/auth/update-profile", body);
+      const { data } = await axios.post("/api/auth/updateProfile", body);
       if (data.success) {
         setAuthUser(data.user);
         toast.success("Profile updated successfully");
+      } else {
+        toast.error(data.message || "Update failed");
       }
     } catch (error) {
       toast.error(error.message);

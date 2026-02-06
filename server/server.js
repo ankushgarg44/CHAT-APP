@@ -58,6 +58,11 @@ app.get("/api/status", (req, res) => {
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
 
+// Users route - for fetching all users (used by sidebar)
+import { getAllUsers } from "./controllers/userController.js";
+import { protectRoute } from "./middleware/auth.js";
+app.get("/api/users", protectRoute, getAllUsers);
+
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 3001;
 
