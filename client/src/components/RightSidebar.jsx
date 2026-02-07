@@ -19,56 +19,66 @@ const RightSidebar = () => {
   const isOnline = selectedUser && onlineUsers.includes(selectedUser._id);
 
   return selectedUser ? (
-    <div className='bg-slate-900/60 backdrop-blur-lg flex flex-col h-full border-l border-white/10 max-md:hidden'>
+    <div className='w-full bg-slate-900/60 backdrop-blur-lg flex flex-col h-full border-l border-white/10'>
       {/* ===== Profile Section ===== */}
       <div className='flex-1 overflow-y-auto'>
-        <div className='pt-8 pb-6 px-6 text-center border-b border-white/10'>
+        {/* Profile Header */}
+        <div className='pt-10 pb-6 px-6 text-center border-b border-white/10 bg-gradient-to-b from-violet-900/20 to-transparent'>
           {/* Avatar with online ring */}
-          <div className='relative inline-block mb-4'>
+          <div className='relative inline-block mb-5'>
             <img
               src={selectedUser?.profilePic || assets.avatar_icon}
               alt={selectedUser.fullName}
-              className={`w-24 h-24 rounded-full object-cover border-4 ${isOnline ? 'border-green-500/50' : 'border-white/10'
+              className={`w-28 h-28 rounded-full object-cover border-4 shadow-lg shadow-violet-500/20 ${isOnline ? 'border-green-500/60' : 'border-white/20'
                 }`}
             />
             {isOnline && (
-              <span className='absolute bottom-1 right-1 w-5 h-5 bg-green-500 rounded-full border-3 border-slate-900'></span>
+              <span className='absolute bottom-2 right-2 w-5 h-5 bg-green-500 rounded-full border-[3px] border-slate-900 shadow-lg shadow-green-500/50'></span>
             )}
           </div>
 
-          {/* Name and status */}
-          <h2 className='text-xl font-semibold text-white mb-1'>
+          {/* Name */}
+          <h2 className='text-xl font-semibold text-white mb-2'>
             {selectedUser.fullName}
           </h2>
-          <span className={`inline-flex items-center gap-1.5 text-xs ${isOnline ? 'text-green-400' : 'text-slate-400'
+
+          {/* Online Status Badge */}
+          <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${isOnline
+              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+              : 'bg-slate-700/50 text-slate-400 border border-slate-600/30'
             }`}>
-            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-slate-500'}`}></span>
+            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-slate-500'}`}></span>
             {isOnline ? 'Online now' : 'Offline'}
           </span>
 
           {/* Bio */}
           {selectedUser.bio && (
-            <p className='mt-3 text-sm text-slate-400 leading-relaxed'>
+            <p className='mt-5 text-sm text-slate-300 leading-relaxed px-2'>
               {selectedUser.bio}
             </p>
           )}
         </div>
 
         {/* ===== Media Section ===== */}
-        <div className='p-4'>
-          <div className='flex items-center justify-between mb-3'>
-            <h3 className='text-sm font-medium text-white'>Shared Media</h3>
+        <div className='p-5'>
+          <div className='flex items-center justify-between mb-4'>
+            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
+              Shared Media
+            </h3>
             {msgImages.length > 0 && (
-              <span className='text-xs text-slate-400'>{msgImages.length} items</span>
+              <span className='text-xs text-violet-400 font-medium bg-violet-500/20 px-2 py-0.5 rounded-full'>
+                {msgImages.length} {msgImages.length === 1 ? 'item' : 'items'}
+              </span>
             )}
           </div>
 
           {msgImages.length === 0 ? (
-            <div className='py-8 text-center'>
-              <div className='w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center'>
-                <img src={assets.gallery_icon} alt="" className='w-5 h-5 opacity-40' />
+            <div className='py-10 text-center bg-white/5 rounded-xl border border-white/5'>
+              <div className='w-14 h-14 mx-auto mb-4 rounded-full bg-violet-500/10 flex items-center justify-center'>
+                <img src={assets.gallery_icon} alt="" className='w-6 h-6 opacity-50' />
               </div>
-              <p className='text-xs text-slate-400'>No shared media yet</p>
+              <p className='text-sm text-slate-400'>No shared media yet</p>
+              <p className='text-xs text-slate-500 mt-1'>Photos will appear here</p>
             </div>
           ) : (
             <div className='grid grid-cols-3 gap-2'>
@@ -76,7 +86,7 @@ const RightSidebar = () => {
                 <button
                   key={index}
                   onClick={() => window.open(url)}
-                  className='aspect-square rounded-lg overflow-hidden hover:opacity-80 transition-opacity border border-white/10 hover:border-violet-500/50'
+                  className='aspect-square rounded-xl overflow-hidden hover:scale-105 transition-all duration-200 border border-white/10 hover:border-violet-500/50 shadow-lg hover:shadow-violet-500/20'
                 >
                   <img
                     src={url}
@@ -86,9 +96,13 @@ const RightSidebar = () => {
                 </button>
               ))}
               {msgImages.length > 9 && (
-                <div className='aspect-square rounded-lg bg-white/5 flex items-center justify-center border border-white/10'>
-                  <span className='text-sm text-slate-400'>+{msgImages.length - 9}</span>
-                </div>
+                <button
+                  onClick={() => {/* Could open gallery modal */ }}
+                  className='aspect-square rounded-xl bg-violet-500/20 flex flex-col items-center justify-center border border-violet-500/30 hover:bg-violet-500/30 transition-colors'
+                >
+                  <span className='text-lg font-semibold text-violet-400'>+{msgImages.length - 9}</span>
+                  <span className='text-[10px] text-violet-300'>more</span>
+                </button>
               )}
             </div>
           )}
@@ -96,10 +110,10 @@ const RightSidebar = () => {
       </div>
 
       {/* ===== Logout Button ===== */}
-      <div className='p-4 border-t border-white/10'>
+      <div className='p-5 border-t border-white/10'>
         <button
           onClick={logout}
-          className='w-full py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-medium hover:opacity-90 transition-opacity'
+          className='w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-semibold hover:opacity-90 hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-200'
         >
           Logout
         </button>

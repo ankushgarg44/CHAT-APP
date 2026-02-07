@@ -1,46 +1,23 @@
-// src/context/ChatContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
-import io from "socket.io-client";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { AuthContext } from "./AuthContext";
 
 // Set axios defaults
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL = backendUrl;
-// Set token from localStorage if available
-const storedToken = localStorage.getItem("token");
-if (storedToken) {
-  axios.defaults.headers.common["token"] = storedToken;
-}
 
 export const ChatContext = createContext();
 
 export const useChat = () => useContext(ChatContext);
 
 export const ChatProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem("token") || ""); // auth token
-  const [authUser, setAuthUser] = useState(null);                          // logged-in user
-  const [onlineUsers, setOnlineUsers] = useState([]);                      // ids of online users
-  const [socket, setSocket] = useState(null);                              // socket.io instance
-  const [messages, setMessages] = useState([]);                            // current chat messages
-  const [unseenMessages, setUnseenMessages] = useState({});                // { userId: count }
-  const [users, setUsers] = useState([]);                                  // all users list
-  const [selectedUser, setSelectedUser] = useState(null);                  // currently selected user for chat
+  const { authUser, socket } = useContext(AuthContext);
 
-  // check auth and fetch user when app loads
-  const checkAuth = async () => {
-    try {
-      const { data } = await axios.get("/api/auth/check");
-      if (data?.success) {
-        setAuthUser(data.user);
-      }
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Authentication failed");
-      setAuthUser(null);
-      setToken("");
-      localStorage.removeItem("token");
-    }
-  };
+  const [messages, setMessages] = useState([]);           // current chat messages
+  const [unseenMessages, setUnseenMessages] = useState({}); // { userId: count }
+  const [users, setUsers] = useState([]);                 // all users list
+  const [selectedUser, setSelectedUser] = useState(null); // currently selected user for chat
 
   // fetch all users
   const getUsers = async () => {
@@ -48,65 +25,15 @@ export const ChatProvider = ({ children }) => {
       const { data } = await axios.get("/api/users");
       if (data?.success) {
         setUsers(data.users);
+        // Also fetch unseen messages count
+        if (data.unseenMessages) {
+          setUnseenMessages(data.unseenMessages);
+        }
       }
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to fetch users");
     }
   };
-
-  // call checkAuth on mount
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  // connect / disconnect socket on auth change
-  useEffect(() => {
-    if (!authUser) {
-      if (socket) socket.disconnect();
-      setSocket(null);
-      setOnlineUsers([]);
-      return;
-    }
-
-    const newSocket = io(import.meta.env.VITE_SOCKET_URL || "/", {
-      withCredentials: true,
-    });
-
-    setSocket(newSocket);
-
-    newSocket.on("connect", () => {
-      // console.log("socket connected", newSocket.id);
-    });
-
-    newSocket.on("getOnlineUsers", users => {
-      setOnlineUsers(users);
-    });
-
-    newSocket.on("newMessage", newMessage => {
-      // if chat is open with this sender, append and mark as seen
-      if (
-        newMessage?.senderId &&
-        newMessage?.receiverId &&
-        authUser &&
-        newMessage.receiverId === authUser._id
-      ) {
-        setMessages(prev => [...prev, newMessage]);
-
-        // increase unseen count for that sender
-        setUnseenMessages(prev => ({
-          ...prev,
-          [newMessage.senderId]:
-            (prev[newMessage.senderId] || 0) + (newMessage.seen ? 0 : 1),
-        }));
-      }
-    });
-
-    return () => {
-      newSocket.off("getOnlineUsers");
-      newSocket.off("newMessage");
-      newSocket.disconnect();
-    };
-  }, [authUser]);
 
   // fetch messages for a selected user
   const getMessages = async selectedUserId => {
@@ -138,22 +65,49 @@ export const ChatProvider = ({ children }) => {
 
       if (data?.success) {
         setMessages(prev => [...prev, data.newMessage]);
-        if (socket) {
-          socket.emit("sendMessage", data.newMessage);
-        }
       }
     } catch (err) {
       toast.error("Failed to send message");
     }
   };
 
+  // Listen for new messages from socket
+  useEffect(() => {
+    if (!socket || !authUser) return;
+
+    const handleNewMessage = newMessage => {
+      // if message is for current user, handle it
+      if (newMessage?.receiverId === authUser._id) {
+        // if chat with sender is open, add to messages
+        if (selectedUser?._id === newMessage.senderId) {
+          setMessages(prev => [...prev, newMessage]);
+        } else {
+          // otherwise increase unseen count
+          setUnseenMessages(prev => ({
+            ...prev,
+            [newMessage.senderId]: (prev[newMessage.senderId] || 0) + 1,
+          }));
+        }
+      }
+    };
+
+    socket.on("newMessage", handleNewMessage);
+
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+    };
+  }, [socket, authUser, selectedUser]);
+
+  // Clear messages when selected user changes
+  useEffect(() => {
+    if (selectedUser) {
+      getMessages(selectedUser._id);
+    } else {
+      setMessages([]);
+    }
+  }, [selectedUser?._id]);
+
   const value = {
-    token,
-    setToken,
-    authUser,
-    setAuthUser,
-    onlineUsers,
-    socket,
     messages,
     setMessages,
     unseenMessages,
@@ -162,7 +116,6 @@ export const ChatProvider = ({ children }) => {
     setUsers,
     selectedUser,
     setSelectedUser,
-    checkAuth,
     getUsers,
     getMessages,
     sendMessage,

@@ -1,5 +1,5 @@
 // src/components/Sidebar.jsx
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import assets from "../assets/assets";
@@ -9,6 +9,8 @@ import { AuthContext } from "../context/AuthContext.jsx";
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   // from ChatContext: users list, selection, unseen counts, fetch
   const {
@@ -31,6 +33,19 @@ const Sidebar = () => {
     getUsers();
   }, [getUsers]);
 
+  // close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener("click", handleClickOutside);
+    }
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [menuOpen]);
+
   // filter users by search
   const filteredUsers = users.filter(user =>
     user.fullName.toLowerCase().includes(input.toLowerCase())
@@ -43,15 +58,15 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`bg-slate-900/80 backdrop-blur-lg w-full md:w-72 lg:w-80 border-r border-white/10 flex flex-col ${selectedUser ? "max-md:hidden" : ""
+      className={`bg-slate-900/80 backdrop-blur-lg w-full min-w-0 border-r border-white/10 flex flex-col h-full overflow-hidden ${selectedUser ? "max-md:hidden" : ""
         }`}
     >
       {/* ===== Header ===== */}
-      <div className="p-4 border-b border-white/10">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-3 sm:p-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="flex items-center gap-2">
             <img
-              src={assets.logo}
+              src={assets.logo_icon}
               alt="logo"
               className="w-8 h-8"
             />
@@ -59,8 +74,13 @@ const Sidebar = () => {
           </div>
 
           {/* Menu dropdown */}
-          <div className="relative group">
-            <button className="p-2 rounded-full hover:bg-white/10 transition-colors">
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 rounded-full hover:bg-white/10 transition-colors touch-target"
+              aria-expanded={menuOpen}
+              aria-haspopup="true"
+            >
               <img
                 src={assets.menu_icon}
                 alt="menu"
@@ -68,9 +88,13 @@ const Sidebar = () => {
               />
             </button>
 
-            <div className="absolute right-0 top-full mt-1 w-40 bg-slate-800 border border-white/10 rounded-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl">
+            <div
+              className={`absolute right-0 top-full mt-1 w-40 bg-slate-800 border border-white/10 rounded-xl py-2 transition-all z-50 shadow-xl ${
+                menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+              }`}
+            >
               <button
-                onClick={() => navigate("/profile")}
+                onClick={() => { navigate("/profile"); setMenuOpen(false); }}
                 className="w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-white/5 flex items-center gap-2"
               >
                 <span className="w-2 h-2 rounded-full bg-violet-500"></span>
@@ -78,7 +102,7 @@ const Sidebar = () => {
               </button>
               <hr className="border-white/10 my-1" />
               <button
-                onClick={logout}
+                onClick={() => { logout(); setMenuOpen(false); }}
                 className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-white/5 flex items-center gap-2"
               >
                 <span className="w-2 h-2 rounded-full bg-red-500"></span>
@@ -107,7 +131,7 @@ const Sidebar = () => {
 
       {/* ===== Online Users Section ===== */}
       {onlineUsers.length > 0 && (
-        <div className="px-4 py-3 border-b border-white/10">
+        <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-white/10 flex-shrink-0">
           <p className="text-xs text-slate-400 mb-2 uppercase tracking-wider">Online Now</p>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {users.filter(u => isUserOnline(u._id)).map(user => (
@@ -135,8 +159,8 @@ const Sidebar = () => {
       )}
 
       {/* ===== Users List ===== */}
-      <div className="flex-1 overflow-y-auto py-2">
-        <p className="px-4 text-xs text-slate-400 mb-2 uppercase tracking-wider">Messages</p>
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-2">
+        <p className="px-3 sm:px-4 text-xs text-slate-400 mb-2 uppercase tracking-wider">Messages</p>
 
         {filteredUsers.length === 0 && (
           <div className="px-4 py-8 text-center">
@@ -148,7 +172,7 @@ const Sidebar = () => {
           <button
             key={user._id}
             onClick={() => { setSelectedUser(user); setUnseenMessages(prev => ({ ...prev, [user._id]: 0 })) }}
-            className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-all ${selectedUser && selectedUser._id === user._id
+            className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-white/5 transition-all ${selectedUser && selectedUser._id === user._id
                 ? "bg-violet-500/20 border-l-2 border-violet-500"
                 : "border-l-2 border-transparent"
               }`}

@@ -9,25 +9,37 @@ const HomePage = () => {
   const { selectedUser } = useContext(ChatContext)
 
   return (
-    <div className='min-h-screen w-full p-4 sm:p-6 md:p-8 lg:px-[10%] lg:py-[3%]'>
-      <div className={`backdrop-blur-xl bg-slate-900/40 border border-white/10 rounded-3xl
-         overflow-hidden h-[calc(100vh-2rem)] sm:h-[calc(100vh-3rem)] md:h-[calc(100vh-4rem)] lg:h-[calc(100vh-6%)]
-         shadow-2xl shadow-violet-500/5
-         flex ${selectedUser ? '' : ''}`}
+    <div
+      className="w-full min-h-screen min-h-[100dvh] flex items-center justify-center
+        p-3 sm:p-4 md:p-5 lg:p-6 xl:px-[8%] xl:py-[2%]
+        [padding-left:max(0.5rem,env(safe-area-inset-left))] [padding-right:max(0.5rem,env(safe-area-inset-right))]
+        [padding-top:max(0.5rem,env(safe-area-inset-top))] [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))]"
+    >
+      <div
+        className="w-full max-w-7xl backdrop-blur-xl bg-slate-900/40 border border-white/10
+          rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col md:flex-row
+          h-[calc(100dvh-1.5rem)] sm:h-[calc(100dvh-2rem)] md:h-[calc(100dvh-2.5rem)] lg:h-[calc(100dvh-3rem)]
+          shadow-2xl shadow-violet-500/5"
       >
         {/* Left Sidebar - User list */}
-        <div className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96`}>
+        <div
+          className={`flex-shrink-0 w-full md:w-72 lg:w-80 xl:w-96 min-w-0
+            ${selectedUser ? 'hidden md:flex' : 'flex'}`}
+        >
           <Sidebar />
         </div>
 
         {/* Main Chat Area */}
-        <div className={`${selectedUser ? 'flex' : 'hidden md:flex'} flex-1`}>
+        <div
+          className={`flex-1 min-w-0 flex flex-col
+            ${selectedUser ? 'flex' : 'hidden md:flex'}`}
+        >
           <Chatcontainer />
         </div>
 
         {/* Right Sidebar - Profile & Media */}
         {selectedUser && (
-          <div className='hidden lg:flex w-72 xl:w-80'>
+          <div className="hidden lg:flex flex-shrink-0 w-80 xl:w-96">
             <RightSidebar />
           </div>
         )}

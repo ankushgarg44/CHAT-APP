@@ -13,11 +13,12 @@ import { initializeSocket, userSocketMap } from "./lib/socket.js";
 const app = express();
 const server = http.createServer(app);
 
-// Socket.IO setup with proper CORS
+// Socket.IO setup with production CORS
 const io = new Server(server, {
   cors: {
-    origin: "*", // Change to your frontend URL in production
-    methods: ["GET", "POST"],
+    origin: process.env.CLIENT_URL || "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
   },
 });
 
@@ -44,8 +45,11 @@ io.on("connection", (socket) => {
   });
 });
 
-// Middleware
-app.use(cors()); // This handles CORS for REST APIs
+// Middleware - CORS config for production
+app.use(cors({
+  origin: process.env.CLIENT_URL || "*",
+  credentials: true
+}));
 app.use(express.json({ limit: "4mb" }));
 app.use(express.urlencoded({ extended: true })); // Optional: for form data
 
