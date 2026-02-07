@@ -6,7 +6,7 @@ import ProfilePage from './pages/ProfilePage'
 import { Toaster } from 'react-hot-toast'
 import { AuthContext } from './context/AuthContext'
 import assets from './assets/assets'
-
+//here we will check if user is authenticated or not and then render the appropriate page. If user is authenticated then we will render the HomePage otherwise we will render the LoginPage. We will also have a route for ProfilePage which will be accessible only if user is authenticated. We will use Navigate component from react-router-dom to redirect the user to the appropriate page based on their authentication status.
 const App = () => {
   const { authUser } = useContext(AuthContext);
   return (
